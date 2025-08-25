@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Cadence {
+  WEEKLY
+  BIWEEKLY
+  SEMIMONTHLY
+  MONTHLY
+}
+
+model User {
+  id           String       @id @default(cuid())
+  name         String?
+  paySchedules PaySchedule[]
+  bills        Bill[]
+  paychecks    Paycheck[]
+}
+
+model PaySchedule {
+  id             String   @id @default(cuid())
+  userId         String
+  cadence        Cadence
+  anchorDate     DateTime
+  weekday        Int?
+  semiDays       String?
+  defaultNetPay  Int
+  user           User     @relation(fields: [userId], references: [id])
+  // (removed paychecks relation to avoid mismatch)
+}
+
+model Bill {
+  id            String    @id @default(cuid())
+  userId        String
+  name          String
+  category      String
+  amountCents   Int
+  dueDay        Int?
+  recurrence    Cadence   @default(MONTHLY)
+  active        Boolean   @default(true)
+  user          User      @relation(fields: [userId], references: [id])
+  occurrences   BillOccurrence[]
+}
+
+model BillOccurrence {
+  id            String   @id @default(cuid())
+  billId        String
+  dueDate       DateTime
+  amountCents   Int
+  status        String   @default("FORECAST")
+  assignedPayId String?
+  bill          Bill     @relation(fields: [billId], references: [id])
+}
+
+model Paycheck {
+  id           String   @id @default(cuid())
+  userId       String
+  payDate      DateTime
+  netPayCents  Int
+  periodStart  DateTime
+  periodEnd    DateTime
+  user         User     @relation(fields: [userId], references: [id])
+}

@@ -1,0 +1,13 @@
+# node / next
+node_modules/
+.next/
+out/
+dist/
+coverage/
+# env & local db
+.env
+.env*.local
+# macOS
+.DS_Store
+# prisma
+prisma/*.db-journal
